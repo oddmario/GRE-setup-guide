@@ -320,7 +320,7 @@ ip tunnel del $GRE_TUNNEL_INTERFACE_NAME
      GRE_TUNNEL_RTTABLES_NAME="GRETUN2"
      ```
 
-     then modify `GRE_VPS_IP` and `BACKEND_IP` to be the additional public IP of the GRE VPS and the IP of the new (or the same) backend server respectively. And make sure to modify the rest of the variables as well (public keys, etc).
+     then modify `GRE_VPS_IP` and `BACKEND_IP` to be the additional public IP of the GRE VPS and the IP of the new (or the same) backend server respectively. And make sure to modify the rest of the variables as well if necessary.
 
      ⚠️ **Also, super importantly,** make sure that the `iptables -F` line on the `makeGRE.sh` script of the GRE VPS is executed only once by ONLY ONE script. Otherwise the script of each GRE tunnel will keep clearing the iptables rules as they are executed, resulting in an unwanted behaviour.
 
