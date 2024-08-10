@@ -54,6 +54,9 @@ GRE_TUNNEL_KEY="1"
 
 # ----------------------------------
 
+# enable the gre kernel module [if needed]
+modprobe ip_gre
+
 # stop & disable the firewall to avoid issues
 systemctl stop firewalld
 systemctl disable firewalld
@@ -182,6 +185,9 @@ GRE_TUNNEL_RTTABLES_ID="100"
 GRE_TUNNEL_RTTABLES_NAME="GRETUN"
 
 # ----------------------------------
+
+# enable the gre kernel module [if needed]
+modprobe ip_gre
 
 # create a new gre tunnel
 # setting a `key` below is not necessary, however we do it in case there will be multiple gre tunnels with the same local and remote ips. iproute will consider this a duplicate tunnel (even with a different $GRE_TUNNEL_INTERFACE_NAME) and thus will fail to add it, unless a key is added.
@@ -417,6 +423,9 @@ ip tunnel del $GRE_TUNNEL_INTERFACE_NAME
 
      # https://serverfault.com/questions/31170/how-to-find-the-gateway-ip-address-in-linux/31204#31204
      GATEWAY_IP=$(ip route show 0.0.0.0/0 dev $BACKEND_SERVER_MAIN_INTERFACE_NAME | cut -d\  -f3)
+
+     # enable the gre kernel module [if needed]
+     modprobe ip_gre
     
      # create a new gre tunnel
      # setting a `key` below is not necessary, however we do it in case there will be multiple gre tunnels with the same local and remote ips. iproute will consider this a duplicate tunnel (even with a different $GRE_TUNNEL_INTERFACE_NAME) and thus will fail to add it, unless a key is added.
