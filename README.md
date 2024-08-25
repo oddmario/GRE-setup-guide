@@ -94,12 +94,12 @@ sysctl -w net.unix.max_dgram_qlen=50
 sysctl -w net.ipv4.neigh.default.proxy_qlen=96
 sysctl -w net.ipv4.neigh.default.unres_qlen=6
 sysctl -w net.ipv4.tcp_congestion_control=bbr
-sysctl -w net.core.default_qdisc=fq
+sysctl -w net.core.default_qdisc=fq_codel
 sysctl -w net.ipv4.tcp_notsent_lowat=16384
 
 # tune the networking
 modprobe tcp_bbr
-tc qdisc replace dev $GRE_VPS_MAIN_INTERFACE root fq
+tc qdisc replace dev $GRE_VPS_MAIN_INTERFACE root fq_codel
 ip link set $GRE_VPS_MAIN_INTERFACE txqueuelen 15000
 ethtool -K $GRE_VPS_MAIN_INTERFACE gro off gso off tso off
 
@@ -128,7 +128,7 @@ iptables -t nat -A POSTROUTING -s $GRE_TUNNEL_GATEWAY_IP/30 ! -o gre+ -j SNAT --
 iptables -t nat -A PREROUTING -d $GRE_VPS_IP -j DNAT --to-destination $GRE_TUNNEL_BACKEND_IP
 
 # tune the gre interface
-tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq
+tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel
 ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 15000
 ethtool -K $GRE_TUNNEL_INTERFACE_NAME gro off gso off tso off
 ```
@@ -212,7 +212,7 @@ ip rule add from $GRE_TUNNEL_GATEWAY_IP/30 table $GRE_TUNNEL_RTTABLES_NAME
 ip route add default via $GRE_TUNNEL_GREVPS_IP table $GRE_TUNNEL_RTTABLES_NAME
 
 # tune the gre interface
-tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq
+tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel
 ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 15000
 ethtool -K $GRE_TUNNEL_INTERFACE_NAME gro off gso off tso off
 ```
@@ -463,7 +463,7 @@ ip tunnel del $GRE_TUNNEL_INTERFACE_NAME
      ip route replace default via $GRE_TUNNEL_GREVPS_IP
     
      # tune the gre interface
-     tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq
+     tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel
      ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 15000
      ethtool -K $GRE_TUNNEL_INTERFACE_NAME gro off gso off tso off
      ```
