@@ -256,10 +256,12 @@ ip tunnel del $GRE_TUNNEL_INTERFACE_NAME
     * soft nofile 2097152
     * hard nofile 2097152
     ```
-  * Edit both `/etc/systemd/system.conf` and `/etc/systemd/user.conf`, and add this line at the end of both files:
+  * Create the two files `/etc/systemd/system.conf.d/10-filelimit.conf` and `/etc/systemd/user.conf.d/10-filelimit.conf` with this content:
     ```
+    [Manager]
     DefaultLimitNOFILE=2097152
     ```
+    Note that you may need to create the `/etc/systemd/system.conf.d/` and `/etc/systemd/user.conf.d/` directories if they don't exist.
   * Reboot the VPS after updating the system & disabling SELinux
 
 2. A bad provider for the GRE tunnel will cause packet loss.
