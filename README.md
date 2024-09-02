@@ -90,12 +90,8 @@ sysctl -w net.ipv4.ip_local_port_range="1024 65535"
 sysctl -w net.nf_conntrack_max=1000000
 sysctl -w net.netfilter.nf_conntrack_max=1000000
 sysctl -w net.ipv4.tcp_max_tw_buckets=1440000
-sysctl -w net.unix.max_dgram_qlen=50
-sysctl -w net.ipv4.neigh.default.proxy_qlen=96
-sysctl -w net.ipv4.neigh.default.unres_qlen=6
 sysctl -w net.ipv4.tcp_congestion_control=bbr
 sysctl -w net.core.default_qdisc=fq_codel
-sysctl -w net.ipv4.tcp_notsent_lowat=16384
 
 # tune the networking
 modprobe tcp_bbr
