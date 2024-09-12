@@ -61,6 +61,7 @@ modprobe ip_gre
 systemctl stop firewalld
 systemctl disable firewalld
 
+modprobe ip_conntrack
 # enable the required kernel tweaks for the purpose of tunneling
 sysctl -w net.ipv4.ip_forward=1
 sysctl -w net.ipv4.conf.$GRE_VPS_MAIN_INTERFACE.proxy_arp=1
@@ -85,6 +86,7 @@ sysctl -w fs.nr_open=2097152
 sysctl -w fs.aio-max-nr=2097152
 sysctl -w net.ipv4.tcp_syncookies=1
 sysctl -w net.core.somaxconn=65535
+sysctl -w net.ipv4.tcp_max_syn_backlog=4096
 sysctl -w net.core.netdev_max_backlog=65535
 sysctl -w net.core.dev_weight=128
 sysctl -w net.ipv4.ip_local_port_range="1024 65535"
@@ -93,6 +95,9 @@ sysctl -w net.netfilter.nf_conntrack_max=1000000
 sysctl -w net.ipv4.tcp_max_tw_buckets=1440000
 sysctl -w net.ipv4.tcp_congestion_control=bbr
 sysctl -w net.core.default_qdisc=fq_codel
+sysctl -w net.core.optmem_max=16777216
+sysctl -w net.core.rmem_max=16777216
+sysctl -w net.core.wmem_max=16777216
 
 # tune the networking
 modprobe tcp_bbr
@@ -114,12 +119,12 @@ ip addr add $GRE_TUNNEL_GREVPS_IP/30 dev $GRE_TUNNEL_INTERFACE_NAME
 ip link set $GRE_TUNNEL_INTERFACE_NAME up
 
 # ensure that iptables won't block any traffic from/to peer B
-iptables -A FORWARD -i gre+ -j ACCEPT
+iptables -A FORWARD -i $GRE_TUNNEL_INTERFACE_NAME -j ACCEPT
 iptables -A FORWARD -d $GRE_TUNNEL_BACKEND_IP -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 iptables -A FORWARD -s $GRE_TUNNEL_BACKEND_IP -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
 # forward any traffic coming from the $GRE_TUNNEL_GATEWAY_IP/30 subnet to the public IP of server A. this will give server B the ability to use the network of server A through the gre tunnel
-iptables -t nat -A POSTROUTING -s $GRE_TUNNEL_GATEWAY_IP/30 ! -o gre+ -j SNAT --to-source $GRE_VPS_IP
+iptables -t nat -A POSTROUTING -s $GRE_TUNNEL_GATEWAY_IP/30 ! -o $GRE_TUNNEL_INTERFACE_NAME -j SNAT --to-source $GRE_VPS_IP
 
 # forward any traffic coming to the public IP of server A to server B. be warned that upon running the below command, you won't be able to access the original server A through its public IP anymore. it will mostly connect you to server B instead
 iptables -t nat -A PREROUTING -d $GRE_VPS_IP -j DNAT --to-destination $GRE_TUNNEL_BACKEND_IP
@@ -150,9 +155,10 @@ GRE_TUNNEL_BACKEND_IP="192.168.168.2"
 
 # ----------------------------------
 
+iptables -D FORWARD -i $GRE_TUNNEL_INTERFACE_NAME -j ACCEPT
 iptables -D FORWARD -d $GRE_TUNNEL_BACKEND_IP -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 iptables -D FORWARD -s $GRE_TUNNEL_BACKEND_IP -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
-iptables -t nat -D POSTROUTING -s $GRE_TUNNEL_GATEWAY_IP/30 ! -o gre+ -j SNAT --to-source $GRE_VPS_IP
+iptables -t nat -D POSTROUTING -s $GRE_TUNNEL_GATEWAY_IP/30 ! -o $GRE_TUNNEL_INTERFACE_NAME -j SNAT --to-source $GRE_VPS_IP
 iptables -t nat -D PREROUTING -d $GRE_VPS_IP -j DNAT --to-destination $GRE_TUNNEL_BACKEND_IP
 ip addr del $GRE_TUNNEL_GREVPS_IP/30 dev $GRE_TUNNEL_INTERFACE_NAME
 ip link set $GRE_TUNNEL_INTERFACE_NAME down
