@@ -464,8 +464,9 @@ ip tunnel del $GRE_TUNNEL_INTERFACE_NAME
 
      # route all the traffic through the gre tunnel. except for $GRE_VPS_MAIN_IP, which still will be routed through the original gateway of server B [this server] instead.
      # the reason we put this exception is because $GRE_VPS_MAIN_IP is used as the gre peer address for our tunnel (its the IP that connects this server to server A). we need it to be accessible so our gre tunnel can function properly.
+     # `metric 0` means the new `default` route takes the highest priority [so it can replace the original default route]
      ip route add $GRE_VPS_MAIN_IP via $GATEWAY_IP dev $BACKEND_SERVER_MAIN_INTERFACE_NAME onlink
-     ip route replace default via $GRE_TUNNEL_GREVPS_IP
+     ip route add default via $GRE_TUNNEL_GREVPS_IP metric 0
     
      # tune the gre interface
      tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel
@@ -499,7 +500,7 @@ ip tunnel del $GRE_TUNNEL_INTERFACE_NAME
      # https://serverfault.com/questions/31170/how-to-find-the-gateway-ip-address-in-linux/31204#31204
      GATEWAY_IP=$(ip route show 0.0.0.0/0 dev $BACKEND_SERVER_MAIN_INTERFACE_NAME | cut -d\  -f3)
 
-     ip route del default via $GRE_TUNNEL_GREVPS_IP
+     ip route del default via $GRE_TUNNEL_GREVPS_IP metric 0
      ip route del $GRE_VPS_MAIN_IP via $GATEWAY_IP dev $BACKEND_SERVER_MAIN_INTERFACE_NAME onlink
     
      ip route del default via $GRE_TUNNEL_GREVPS_IP table $GRE_TUNNEL_RTTABLES_NAME
