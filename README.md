@@ -85,7 +85,7 @@ sysctl -w fs.aio-max-nr=2097152
 sysctl -w net.ipv4.tcp_syncookies=1
 sysctl -w net.core.somaxconn=65535
 sysctl -w net.ipv4.tcp_max_syn_backlog=4096
-sysctl -w net.core.netdev_max_backlog=65535
+sysctl -w net.core.netdev_max_backlog=999999999
 sysctl -w net.core.dev_weight=128
 sysctl -w net.ipv4.ip_local_port_range="16384 65535"
 sysctl -w net.nf_conntrack_max=1000000
@@ -99,8 +99,8 @@ sysctl -w net.ipv6.route.flush=1
 
 # tune the networking
 modprobe tcp_cubic
-tc qdisc replace dev $GRE_VPS_MAIN_INTERFACE root fq_codel
-ip link set $GRE_VPS_MAIN_INTERFACE txqueuelen 15000
+tc qdisc replace dev $GRE_VPS_MAIN_INTERFACE root fq_codel limit 99999999
+ip link set $GRE_VPS_MAIN_INTERFACE txqueuelen 999999999
 ethtool -K $GRE_VPS_MAIN_INTERFACE gro off gso off tso off
 
 # clear all iptables rules
@@ -128,8 +128,8 @@ iptables -t nat -A POSTROUTING -s $GRE_TUNNEL_GATEWAY_IP/30 ! -o $GRE_TUNNEL_INT
 iptables -t nat -A PREROUTING -d $GRE_VPS_IP -j DNAT --to-destination $GRE_TUNNEL_BACKEND_IP
 
 # tune the gre interface
-tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel
-ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 15000
+tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel limit 99999999
+ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 999999999
 ethtool -K $GRE_TUNNEL_INTERFACE_NAME gro off gso off tso off
 ```
 
@@ -213,8 +213,8 @@ ip rule add from $GRE_TUNNEL_GATEWAY_IP/30 table $GRE_TUNNEL_RTTABLES_NAME
 ip route add default via $GRE_TUNNEL_GREVPS_IP table $GRE_TUNNEL_RTTABLES_NAME
 
 # tune the gre interface
-tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel
-ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 15000
+tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel limit 99999999
+ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 999999999
 ethtool -K $GRE_TUNNEL_INTERFACE_NAME gro off gso off tso off
 ```
 
@@ -467,8 +467,8 @@ ip tunnel del $GRE_TUNNEL_INTERFACE_NAME
      ip route add default via $GRE_TUNNEL_GREVPS_IP metric 0
     
      # tune the gre interface
-     tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel
-     ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 15000
+     tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq_codel limit 99999999
+     ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 999999999
      ethtool -K $GRE_TUNNEL_INTERFACE_NAME gro off gso off tso off
      ```
      
