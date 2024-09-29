@@ -72,10 +72,6 @@ sysctl -w net.ipv4.conf.default.accept_redirects=0
 
 # additional kernel tweaks
 sysctl -w net.ipv4.tcp_mtu_probing=1
-## Disabling IPv6 below is optional
-sysctl -w net.ipv6.conf.all.disable_ipv6=1
-sysctl -w net.ipv6.conf.default.disable_ipv6=1
-sysctl -w net.ipv6.conf.lo.disable_ipv6=1
 sysctl -w fs.file-max=2097152
 sysctl -w fs.inotify.max_user_instances=2097152
 sysctl -w fs.inotify.max_user_watches=2097152
@@ -90,14 +86,14 @@ sysctl -w net.nf_conntrack_max=1000000
 sysctl -w net.netfilter.nf_conntrack_max=1000000
 sysctl -w net.ipv4.tcp_max_tw_buckets=1440000
 sysctl -w net.ipv4.tcp_congestion_control=bbr
-sysctl -w net.core.default_qdisc=fq
+sysctl -w net.core.default_qdisc=noqueue
 
 sysctl -w net.ipv4.route.flush=1
 sysctl -w net.ipv6.route.flush=1
 
 # tune the networking
 modprobe tcp_bbr
-tc qdisc replace dev $GRE_VPS_MAIN_INTERFACE root fq limit 99999 flow_limit 99999
+tc qdisc replace dev $GRE_VPS_MAIN_INTERFACE root noqueue
 ip link set $GRE_VPS_MAIN_INTERFACE txqueuelen 99999
 
 # clear all iptables rules
@@ -125,7 +121,7 @@ iptables -t nat -A POSTROUTING -s $GRE_TUNNEL_GATEWAY_IP/30 ! -o $GRE_TUNNEL_INT
 iptables -t nat -A PREROUTING -d $GRE_VPS_IP -j DNAT --to-destination $GRE_TUNNEL_BACKEND_IP
 
 # tune the gre interface
-tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq limit 99999 flow_limit 99999
+tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root noqueue
 ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 99999
 ```
 
@@ -209,7 +205,7 @@ ip rule add from $GRE_TUNNEL_GATEWAY_IP/30 table $GRE_TUNNEL_RTTABLES_NAME
 ip route add default via $GRE_TUNNEL_GREVPS_IP table $GRE_TUNNEL_RTTABLES_NAME
 
 # tune the gre interface
-tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq limit 99999 flow_limit 99999
+tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root noqueue
 ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 99999
 ```
 
@@ -462,7 +458,7 @@ ip tunnel del $GRE_TUNNEL_INTERFACE_NAME
      ip route add default via $GRE_TUNNEL_GREVPS_IP metric 0
     
      # tune the gre interface
-     tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root fq limit 99999 flow_limit 99999
+     tc qdisc replace dev $GRE_TUNNEL_INTERFACE_NAME root noqueue
      ip link set $GRE_TUNNEL_INTERFACE_NAME txqueuelen 99999
      ```
      
