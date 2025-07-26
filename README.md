@@ -260,7 +260,7 @@ ip tunnel del $GRE_TUNNEL_INTERFACE_NAME
     Note that you may need to create the `/etc/systemd/system.conf.d/` and `/etc/systemd/user.conf.d/` directories if they don't exist.
   * Reboot the VPS after updating the system & disabling SELinux
 
-2. A bad provider for the GRE tunnel will cause packet loss.
+2. A bad provider for the GRE tunnel will cause packet loss **unless you configure MTUs properly to work for the provider**.
      An example of that is Aeza.net. See https://lowendtalk.com/discussion/192513/aeza-sweden-and-probably-other-locations-network-issues
 
 3. Setting the incorrect MTU for the gre (e.g. `gre1`) interface will cause packet loss and/or slow connectivity through the tunnel.
